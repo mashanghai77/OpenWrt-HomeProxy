@@ -3291,11 +3291,11 @@ msgstr "核心管理"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:268
 msgid "Official"
-msgstr "sing-box"
+msgstr "官方版"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:268
 msgid "reF1nd"
-msgstr "sing-box-reF1nd"
+msgstr "reF1nd版"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:191
 msgid "Checking..."
@@ -3305,3 +3305,78 @@ msgstr "检查中..."
 msgid "Installing..."
 msgstr "安装中..."
 
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Update to latest official"
+msgstr "更新到最新官方版"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Update to latest reF1nd"
+msgstr "更新到最新 reF1nd 版"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "SagerNet/sing-box mainline release."
+msgstr "SagerNet/sing-box 主线正式版。"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "reF1nd/sing-box fork"
+msgstr "reF1nd/sing-box 分支版"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "If an update misbehaves"
+msgstr "如果更新后出现异常"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Restore firmware version"
+msgstr "恢复固件版本"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Restoring firmware-shipped version..."
+msgstr "正在恢复固件自带版本..."
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Restored successfully"
+msgstr "恢复成功"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Restore failed"
+msgstr "恢复失败"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Checking requirements..."
+msgstr "正在检查依赖..."
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Installation failed"
+msgstr "安装失败"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Updated successfully"
+msgstr "更新成功"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Downloading"
+msgstr "正在下载"
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Installing (service will restart)..."
+msgstr "正在安装（服务将重启）..."
+
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js
+msgid "Download failed"
+msgstr "下载失败"
