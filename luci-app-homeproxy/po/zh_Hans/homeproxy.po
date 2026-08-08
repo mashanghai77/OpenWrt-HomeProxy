@@ -3291,11 +3291,11 @@ msgstr "核心管理"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:268
 msgid "Official"
-msgstr "官方版"
+msgstr "sing-box"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:268
 msgid "reF1nd"
-msgstr "reF1nd版"
+msgstr "sing-box-reF1nd"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:191
 msgid "Checking..."
