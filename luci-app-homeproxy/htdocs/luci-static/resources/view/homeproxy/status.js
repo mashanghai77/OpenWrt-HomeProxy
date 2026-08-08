@@ -113,6 +113,204 @@ function getResVersion(o, type) {
 	});
 }
 
+function callCoreInfo() {
+	return rpc.declare({ object: 'luci.homeproxy', method: 'core_info', expect: { '': {} } })();
+}
+function callCoreCheckRemote(core, channel) {
+	return rpc.declare({ object: 'luci.homeproxy', method: 'core_check_remote', params: ['core', 'channel'], expect: { '': {} } })(core, channel);
+}
+function callCorePrepare(core, channel) {
+	return rpc.declare({ object: 'luci.homeproxy', method: 'core_prepare_install', params: ['core', 'channel'], expect: { '': {} } })(core, channel);
+}
+function callCoreDownload(url, tmp_path) {
+	return rpc.declare({ object: 'luci.homeproxy', method: 'core_download', params: ['url', 'tmp_path'], expect: { '': {} } })(url, tmp_path);
+}
+function callCoreInstall(core, tmp_path) {
+	return rpc.declare({ object: 'luci.homeproxy', method: 'core_install', params: ['core', 'tmp_path'], expect: { '': {} } })(core, tmp_path);
+}
+function callCoreRestore() {
+	return rpc.declare({ object: 'luci.homeproxy', method: 'core_restore', expect: { '': {} } })();
+}
+
+/* Only one sing-box binary can be active at a time (unlike hiddify's two
+ * independent optional cores), so this renders as ONE status line + two
+ * "update to latest X" actions that both overwrite /usr/bin/sing-box,
+ * plus a restore-to-firmware-version safety net. */
+function buildCoreManagement(o) {
+	const statusEl = E('strong', { 'style': 'color:gray' }, _('Loading...'));
+	const msgEl = E('span', { 'style': 'margin-left:8px; font-size:0.9em' }, '');
+	const setMsg = (txt, color) => { msgEl.textContent = txt; msgEl.style.color = color || 'gray'; };
+
+	let restoreBtn;
+
+	/* Both core rows (official / reF1nd) drive the SAME /usr/bin/sing-box
+	 * binary, so a check/update running for one core must disable every
+	 * other interactive control here — otherwise a second click while a
+	 * core_install is in flight races the first one (concurrent stop/
+	 * start + binary overwrite). All buttons that need to be locked down
+	 * during any in-flight operation register themselves here. */
+	let busy = false;
+	const lockables = [];
+	function registerLockable(el) { lockables.push(el); return el; }
+	function setBusy(state) {
+		busy = state;
+		for (let el of lockables) el.disabled = state || (el === restoreBtn && !restoreBtn.__hasBackup);
+	}
+
+	const savedChannel = uci.get('homeproxy', 'config', 'core_channel');
+	const channelSelect = registerLockable(E('select', {
+		'class': 'cbi-input-select',
+		'style': 'margin-left: 4px; width: 8em;',
+		'change': ui.createHandlerFn(this, (ev) => {
+			const newChannel = ev.target.value;
+			uci.set('homeproxy', 'config', 'core_channel', newChannel);
+			setMsg(_('Saving...'), 'gray');
+			/* Deliberately bypass o.map.save()/parse() here: it walks every
+			 * field in this form, including the Connection check / Resources
+			 * management DummyValues above whose cfgvalue() returns a
+			 * Promise rather than a plain value. That trips up the CBI
+			 * parse step and can silently swallow the whole save chain
+			 * before uci.save() (and thus the actual commit) ever runs —
+			 * which looks exactly like "picked Stable, but it's back to
+			 * Latest after reload". Committing this single key directly
+			 * via uci.save() sidesteps that entirely. */
+			return uci.save().then(() => {
+				setMsg('', 'gray');
+				return ui.changes.apply(true);
+			}).catch((err) => {
+				setMsg(_('Failed to save channel: %s').format(err || ''), 'red');
+			});
+		})
+	}, [
+		E('option', { 'value': 'latest', 'selected': (savedChannel !== 'stable') ? '' : null }, [ 'Latest' ]),
+		E('option', { 'value': 'stable', 'selected': (savedChannel === 'stable') ? '' : null }, [ 'Stable' ])
+	]));
+	const getChannel = () => channelSelect.value;
+
+	function refreshStatus() {
+		return L.resolveDefault(callCoreInfo(), {}).then((info) => {
+			if (info.installed) {
+				const vendorLabel = info.vendor === 'ref1nd' ? 'reF1nd' : 'Official';
+				statusEl.textContent = 'sing-box v' + info.version + ' (' + vendorLabel + ')';
+				statusEl.style.color = 'green';
+			} else {
+				statusEl.textContent = _('Not detected');
+				statusEl.style.color = 'red';
+			}
+			if (restoreBtn) {
+				restoreBtn.__hasBackup = !!info.has_backup;
+				restoreBtn.disabled = busy || !info.has_backup;
+			}
+			return info;
+		});
+	}
+
+	function buildRow(core, label, desc) {
+		const remoteEl = E('span', { 'style': 'font-size:0.9em; color:gray; margin-left:8px' }, '');
+
+		const checkBtn = registerLockable(E('button', {
+			'class': 'btn cbi-button',
+			'click': async function() {
+				if (busy) return;
+				setBusy(true);
+				remoteEl.textContent = _('Checking...');
+				remoteEl.style.color = 'gray';
+				const ret = await L.resolveDefault(callCoreCheckRemote(core, getChannel()), {});
+				setBusy(false);
+				if (ret.error) {
+					remoteEl.textContent = ret.error;
+					remoteEl.style.color = 'red';
+				} else {
+					remoteEl.textContent = _('Latest') + ': v' + ret.version + (ret.prerelease ? ' (pre-release)' : '');
+					remoteEl.style.color = 'darkorange';
+				}
+			}
+		}, [ _('Check update') ]));
+
+		const updateBtn = registerLockable(E('button', {
+			'class': 'btn cbi-button cbi-button-action',
+			'style': 'margin-left:4px',
+			'click': async function() {
+				if (busy) return;
+				setBusy(true);
+				setMsg(_('Checking requirements...'), 'gray');
+
+				const prep = await L.resolveDefault(callCorePrepare(core, getChannel()), {});
+				if (prep.error) {
+					setMsg(prep.error, 'red');
+					setBusy(false);
+					return;
+				}
+
+				setMsg(_('Downloading') + ' v' + prep.version + '...', 'gray');
+				const dl = await L.resolveDefault(callCoreDownload(prep.dl_url, prep.tmp_path), {});
+				if (!dl.result) {
+					setMsg(dl.error || _('Download failed'), 'red');
+					setBusy(false);
+					return;
+				}
+
+				setMsg(_('Installing (service will restart)...'), 'gray');
+				const inst = await L.resolveDefault(callCoreInstall(core, prep.tmp_path), {});
+				if (!inst.result) {
+					setMsg(inst.error || _('Installation failed'), 'red');
+					setBusy(false);
+					return;
+				}
+
+				setMsg(_('Updated successfully'), 'green');
+				await refreshStatus();
+				setBusy(false);
+			}
+		}, [ label ]));
+
+		return E('div', { 'style': 'margin-bottom:8px; display:flex; align-items:center; flex-wrap:wrap; gap:4px' }, [
+			E('strong', { 'style': 'min-width:70px; display:inline-block' }, core === 'official' ? 'Official' : 'reF1nd'),
+			checkBtn, updateBtn, remoteEl,
+			E('div', { 'style': 'width:100%; font-size:0.85em; color:#666; margin-top:2px' }, desc)
+		]);
+	}
+
+	restoreBtn = registerLockable(E('button', {
+		'class': 'btn cbi-button cbi-button-negative',
+		'style': 'margin-left:8px',
+		'disabled': true,
+		'click': async function() {
+			if (busy) return;
+			setBusy(true);
+			setMsg(_('Restoring firmware-shipped version...'), 'gray');
+			const ret = await L.resolveDefault(callCoreRestore(), {});
+			if (ret.result) {
+				setMsg(_('Restored successfully'), 'green');
+				await refreshStatus();
+			} else {
+				setMsg(ret.error || _('Restore failed'), 'red');
+			}
+			setBusy(false);
+		}
+	}, [ _('Restore firmware version') ]));
+
+	const container = E('div', { 'style': 'padding:6px 0' }, [
+		E('div', { 'style': 'margin-bottom:8px' }, [
+			_('Active core') + ': ', statusEl, msgEl
+		]),
+		E('div', { 'style': 'margin-bottom:10px' }, [
+			_('Update channel') + ':', channelSelect
+		]),
+		buildRow('official', _('Update to latest official'),
+			_('SagerNet/sing-box mainline release.')),
+		buildRow('ref1nd', _('Update to latest reF1nd'),
+			_('reF1nd/sing-box fork')),
+		E('div', { 'style': 'margin-top:6px' }, [
+			_('If an update misbehaves') + ': ', restoreBtn
+		])
+	]);
+
+	refreshStatus();
+
+	o.default = container;
+}
+
 function getRuntimeLog(o, name, _option_index, section_id, _in_table) {
 	const filename = o.option.split('_')[1];
 
@@ -274,6 +472,12 @@ return view.extend({
 
 			return node;
 		}
+
+		s = m.section(form.NamedSection, 'config', 'homeproxy', _('Core management'));
+		s.anonymous = true;
+
+		o = s.option(form.DummyValue, '_core_management');
+		o.cfgvalue = L.bind(buildCoreManagement, this, o);
 
 		s = m.section(form.NamedSection, 'config', 'homeproxy');
 		s.anonymous = true;
