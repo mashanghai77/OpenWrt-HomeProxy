@@ -3289,14 +3289,6 @@ msgstr "当前核心"
 msgid "Core management"
 msgstr "核心管理"
 
-#: htdocs/luci-static/resources/view/homeproxy/status.js:268
-msgid "Official"
-msgstr "官方主线"
-
-#: htdocs/luci-static/resources/view/homeproxy/status.js:268
-msgid "reF1nd"
-msgstr "reF1nd 分支"
-
 #: htdocs/luci-static/resources/view/homeproxy/status.js:191
 msgid "Checking..."
 msgstr "检查中..."
@@ -3304,7 +3296,6 @@ msgstr "检查中..."
 #: htdocs/luci-static/resources/view/homeproxy/status.js:238
 msgid "Installing..."
 msgstr "安装中..."
-
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
