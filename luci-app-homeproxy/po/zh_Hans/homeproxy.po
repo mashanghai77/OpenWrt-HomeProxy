@@ -3291,11 +3291,11 @@ msgstr "核心管理"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:268
 msgid "Official"
-msgstr "官方版"
+msgstr "官方主线"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:268
 msgid "reF1nd"
-msgstr "reF1nd版"
+msgstr "reF1nd 分支"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js:191
 msgid "Checking..."
@@ -3309,22 +3309,22 @@ msgstr "安装中..."
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
 msgid "Update to latest official"
-msgstr "更新到最新官方版"
+msgstr "更新最新版"
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
 msgid "Update to latest reF1nd"
-msgstr "更新到最新 reF1nd 版"
+msgstr "更新最新版"
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
 msgid "SagerNet/sing-box mainline release."
-msgstr "SagerNet/sing-box 主线正式版。"
+msgstr "SagerNet/sing-box 主线"
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
 msgid "reF1nd/sing-box fork"
-msgstr "reF1nd/sing-box 分支版"
+msgstr "reF1nd/sing-box 分支"
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
@@ -3334,12 +3334,12 @@ msgstr "如果更新后出现异常"
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
 msgid "Restore firmware version"
-msgstr "恢复固件版本"
+msgstr "恢复初始版本"
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
 msgid "Restoring firmware-shipped version..."
-msgstr "正在恢复固件自带版本..."
+msgstr "正在恢复初始自带版本..."
 
 
 #: htdocs/luci-static/resources/view/homeproxy/status.js
