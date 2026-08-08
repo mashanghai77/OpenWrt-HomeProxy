@@ -3280,3 +3280,28 @@ msgstr "正在更新订阅"
 #: htdocs/luci-static/resources/view/homeproxy/node.js:1556
 msgid "Fetching \"%s\" ..."
 msgstr "正在拉取“%s” ..."
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js:295
+msgid "Active core"
+msgstr "当前核心"
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js:476
+msgid "Core management"
+msgstr "核心管理"
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js:268
+msgid "Official"
+msgstr "官方版"
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js:268
+msgid "reF1nd"
+msgstr "reF1nd版"
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js:191
+msgid "Checking..."
+msgstr "检查中..."
+
+#: htdocs/luci-static/resources/view/homeproxy/status.js:238
+msgid "Installing..."
+msgstr "安装中..."
+
