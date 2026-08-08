@@ -495,8 +495,16 @@ const methods = {
 	resources_get_version: {
 		args: { type: 'type' },
 		call: function(req) {
-			const version = trim(readfile(`${HP_DIR}/resources/${req.args?.type}.ver`));
-			return { version: version, error: error() };
+			const raw = readfile(`${HP_DIR}/resources/${req.args?.type}.ver`);
+			/* Don't rely on fs.error(): it's a global "last error" that
+			 * persists across unrelated fs calls made elsewhere in this
+			 * script (e.g. core_info()'s access() checks, which fail by
+			 * design before any core has ever been installed). Judge
+			 * success purely from what readfile() itself returned. */
+			if (raw === null)
+				return { error: 'not found' };
+			const version = trim(raw);
+			return length(version) ? { version: version } : { error: 'not found' };
 		}
 	},
 	resources_update: {
